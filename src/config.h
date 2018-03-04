@@ -24,8 +24,11 @@ struct config{
     float distance;
     int nCheckpoints;
     unsigned int seed;
+    float *checkpoints;
+    struct entrant_t *entrant;
 };
 
+void configDefaults(struct config *pConfig);
 void configInit(struct config * c);
 void configPrintHelp();
 void configParseFromArgs(struct config *c, int argc, char **argv);

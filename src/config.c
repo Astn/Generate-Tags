@@ -4,9 +4,11 @@
 
 
 
+#include <tal.h>
 #include "config.h"
+#include "entrant_t.h"
 
-void configInit(struct config * c){
+void configDefaults(struct config * c){
     c->readRadiusInMiles = 0.00189394;
     c->maxFidelity.tv_sec = 0;
     c->maxFidelity.tv_usec = OneSecondsInMicroSeconds / 10;
@@ -15,6 +17,23 @@ void configInit(struct config * c){
     c->numEntrants = 1000;
     c->distance = 10;
     c->nCheckpoints = 11;
+    c->checkpoints = NULL;
+    c->entrant = NULL;
+}
+void configInit(struct config * c){
+
+    // checkpoints
+    c->checkpoints = tal_arr(c,float,(size_t)c->nCheckpoints);
+    srand(c->seed);
+    for (int j = 0; j < c->nCheckpoints; ++j) {
+        c->checkpoints[j] = c->distance / (c->nCheckpoints -1) * j;
+    }
+
+    // entrant
+    c->entrant = tal_arr(c,struct entrant_t,(size_t)c->numEntrants);
+    for (int i = 0; i < c->numEntrants; ++i) {
+        entrantInit(&c->entrant[i],i);
+    }
 }
 
 void configPrintHelp(){

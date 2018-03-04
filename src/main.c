@@ -5,45 +5,38 @@
 
 #include "main.h"
 
+#include "../ccan/tal/tal.h"
+
 void entrantPrintTagsForCheckpoints(struct entrant_t *pEntrant, struct config *pConfig, float* checkpoints);
 
 int main(int argc, char** argv) {
-    struct config c;
-    struct config * pc = &c;
-    configInit(pc);
-    // parse input args
+
+
+    struct config * pc = tal(NULL,struct config);
+    if (!pc)
+        return -1;
+
+    configDefaults(pc);
     configParseFromArgs(pc, argc, argv);
+    configInit(pc);
     configPrint(pc);
-
-    srand(pc->seed);
-    float checkpoints[pc->nCheckpoints];
-    for (int j = 0; j < pc->nCheckpoints; ++j) {
-        checkpoints[j] = pc->distance / (pc->nCheckpoints -1) * j;
-    }
-
-    struct entrant_t * entrants = malloc(pc->numEntrants * sizeof(struct entrant_t));
-
-    for (int i = 0; i < pc->numEntrants; ++i) {
-        entrantInit(&entrants[i],i);
-        //entrantPrint(&entrants[i]);
-    }
 
     int numRunning =pc->numEntrants;
     while(numRunning){
         numRunning =pc->numEntrants;
         for (int i = 0; i < pc->numEntrants; ++i) {
-            if(entrants[i].position > checkpoints[pc->nCheckpoints-1] + pc->readRadiusInMiles){
+            if(pc->entrant[i].position > pc->checkpoints[pc->nCheckpoints-1] + pc->readRadiusInMiles){
                 numRunning--;
             } else {
                 // move them.
-                entrantMove(&entrants[i],&pc->advanceRate);
+                entrantMove(&pc->entrant[i],&pc->advanceRate);
                 // get a tag read if near a checkpoint;
-                entrantPrintTagsForCheckpoints(&entrants[i],pc,&checkpoints[0]);
+                entrantPrintTagsForCheckpoints(&pc->entrant[i],pc,&pc->checkpoints[0]);
             }
         }
     }
 
-    free(entrants);
+    tal_free(pc);
     return 0;
 }
 

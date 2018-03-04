@@ -3,4 +3,10 @@ project(generateRaceC99 C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(generateRaceC99 entrant_t.h config.h main.h main.c config.c entrant_t.c)
+add_subdirectory(ccan/tal)
+
+include_directories(ccan/tal/)
+
+add_executable(generateRaceC99 src/main.c src/config.c src/entrant_t.c)
+
+target_link_libraries(generateRaceC99 tal)
