@@ -1,3 +1,0 @@
-[submodule "samba"]
-	path = samba
-	url = https://github.com/samba-team/samba.git
