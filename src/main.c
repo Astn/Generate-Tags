@@ -17,15 +17,29 @@ int main(int argc, char** argv) {
         return -1;
 
     configDefaults(pc);
-    configParseFromArgs(pc, argc, argv);
-    configInit(pc);
-    configPrint(pc);
+    if(configParseFromArgs(pc, argc, argv) < 0) {
+        return -1;
+    }
 
-    int numRunning =pc->numEntrants;
+    configInit(pc);
+
+    if(pc->verbose){
+        configPrint(pc);
+        for (int i = 0; i < pc->nEntrant; ++i) {
+            entrantPrint(&pc->entrant[i]);
+        }
+    }
+
+    if(pc->exit){
+        return 0;
+    }
+
+
+    int numRunning =pc->nEntrant;
     while(numRunning){
-        numRunning =pc->numEntrants;
-        for (int i = 0; i < pc->numEntrants; ++i) {
-            if(pc->entrant[i].position > pc->checkpoints[pc->nCheckpoints-1] + pc->readRadiusInMiles){
+        numRunning =pc->nEntrant;
+        for (int i = 0; i < pc->nEntrant; ++i) {
+            if(pc->entrant[i].position > pc->checkpoints[pc->nCheckpoint-1] + pc->readRadiusInMiles){
                 numRunning--;
             } else {
                 // move them.
@@ -41,11 +55,11 @@ int main(int argc, char** argv) {
 }
 
 void entrantPrintTagsForCheckpoints(struct entrant_t * entrant, struct config *pc, float* checkpoints) {
-    for (int j = 0; j < pc->nCheckpoints; ++j) {
+    struct timeval timeDelta;
+    for (int j = 0; j < pc->nCheckpoint; ++j) {
         double distToCheckpoint =entrant->position - checkpoints[j];
         if(distToCheckpoint < pc->readRadiusInMiles && distToCheckpoint > -pc->readRadiusInMiles){
             // near a checkpoint, make sure we dont emit tags to frequently
-            struct timeval timeDelta;
             timersub(&entrant->myTime, &entrant->lastTag, &timeDelta);
             if((entrant->lastTag.tv_sec == 0 && entrant->lastTag.tv_usec == 0)
                || timercmp(&timeDelta,&pc->maxFidelity,>=)){
